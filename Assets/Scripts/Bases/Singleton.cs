@@ -37,6 +37,7 @@ public class Singleton<T> : MonoBehaviour where T : Singleton<T>
         else
         {
             Instance = (T) this;
+            OnAwake();
             //Debug.Log(
             //    "The " +
             //    typeof(T).ToString() +
