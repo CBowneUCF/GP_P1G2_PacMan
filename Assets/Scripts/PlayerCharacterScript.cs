@@ -35,4 +35,11 @@ public class PlayerCharacterScript : MonoBehaviour
     }
 
     public void SetLevelSize(Vector2 size) => levelSize = size;
+
+
+    public void Kill()
+    {
+
+    }
+
 }
