@@ -15,15 +15,24 @@ public class EnemyEntityScript : MonoBehaviour
     NavMeshAgent agent;
 
 
-    public enum EnemyState { Generating, Active, Vulnerable, Fleeing };
+    public enum EnemyState { Generating, Scattering, Chasing, Vulnerable, Fleeing };
     public EnemyState enemyState;
+
+    public enum GhostAIStyle { Shadow, Bashful, Speedy, Pokey};
+    public GhostAIStyle style;
 
     public float speed;
 
     public float vulnerabilityTime;
     Coroutine vulCoroutine;
 
+    public float generatingTime;
+
     public GameObject player;
+
+    public Vector2 homeBaseTarget;
+    public Vector2 scatterTarget;
+    Vector2 secondaryScatterTarget;
 
 
     void Awake()
@@ -42,7 +51,7 @@ public class EnemyEntityScript : MonoBehaviour
         PlayerCharacterScript player = collision.GetComponent<PlayerCharacterScript>();
         if(player != null)
         {
-            if (enemyState == EnemyState.Active) player.Kill();
+            if (enemyState == EnemyState.Scattering || enemyState == EnemyState.Chasing) player.Kill();
             else if (enemyState == EnemyState.Vulnerable) Chomp();
 
         }
@@ -59,7 +68,8 @@ public class EnemyEntityScript : MonoBehaviour
     {
         yield return WaitFor.Seconds(time);
         yield return null;
-        enemyState = EnemyState.Active;
+        enemyState = EnemyState.Chasing;
+        vulCoroutine = null;
     }
 
 
@@ -67,13 +77,52 @@ public class EnemyEntityScript : MonoBehaviour
     {
         vulCoroutine.StopAuto();
         vulCoroutine = null;
+
     }
 
 
 
     private void Update()
     {
-        agent.destination = player.transform.position;
+        if(enemyState == EnemyState.Generating)
+        {
+            
+        }
+        else if (enemyState == EnemyState.Scattering)
+        {
+
+        }
+        else if (enemyState == EnemyState.Chasing)
+        {
+
+            //https://youtu.be/ataGotQ7ir8?t=370
+            if (style == GhostAIStyle.Shadow)
+            {
+                //Target the player always.
+            }
+            else if (style == GhostAIStyle.Bashful)
+            {
+                //Target a vector from Shadow to the player rotated 180 degrees.
+            }
+            else if (style == GhostAIStyle.Speedy)
+            {
+                //Target a few spaces in front of the player.
+            }
+            else if (style == GhostAIStyle.Pokey)
+            {
+                //Target the player, but if reaches a radius around the player and the player is facing towards him, run away.
+            }
+            //If very small distance away from player, target player.
+
+        }
+        else if (enemyState == EnemyState.Vulnerable)
+        {
+
+        }
+        else if (enemyState == EnemyState.Fleeing)
+        {
+
+        }
     }
 
 

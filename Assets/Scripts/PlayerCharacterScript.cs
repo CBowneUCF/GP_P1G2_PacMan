@@ -12,9 +12,9 @@ public class PlayerCharacterScript : MonoBehaviour
 
     [SerializeField] private Vector2 levelSize;
 
-    public AStarSystem.AGrid grid;
-    public Vector2 gridPos;
-    public bool isWalk;
+    //public AStarSystem.AGrid grid;
+    //public Vector2 gridPos;
+    //public bool isWalk;
     
     void Awake()
     {
