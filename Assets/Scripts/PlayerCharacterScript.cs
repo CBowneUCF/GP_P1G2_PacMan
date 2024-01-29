@@ -11,6 +11,10 @@ public class PlayerCharacterScript : MonoBehaviour
     [SerializeField] float speed;
 
     [SerializeField] private Vector2 levelSize;
+
+    public AStarSystem.AGrid grid;
+    public Vector2 gridPos;
+    public bool isWalk;
     
     void Awake()
     {
@@ -22,7 +26,8 @@ public class PlayerCharacterScript : MonoBehaviour
     
     void Update()
     {
-        
+        //gridPos = grid.NodeFromWorldPoint(transform.position).worldPosition;
+        //isWalk = grid.NodeFromWorldPoint(transform.position).walkable;
     }
     
     void FixedUpdate()
