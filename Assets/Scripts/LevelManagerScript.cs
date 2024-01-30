@@ -43,6 +43,13 @@ public class LevelManagerScript : Singleton<LevelManagerScript>
         if (pelletsLeft == 0)Win();
 
     }
+    public void PowerPelletCollect()
+    {
+        for (int i = 0; i < enemies.Length; i++)
+        {
+            enemies[i].MakeVulnerable();
+        }
+    }
 
     void Win(){  
     Debug.Log("WIN");
@@ -73,7 +80,7 @@ public class LevelManagerScript : Singleton<LevelManagerScript>
             for (int i = 0; i < enemies.Length; i++)
             {
                 enemies[i].transform.position = enemyStartPos[i];
-                enemies[i].enemyState = EnemyEntityScript.EnemyState.Chasing;
+                enemies[i].stateGenerating.EnterState();
             }
         }
     }

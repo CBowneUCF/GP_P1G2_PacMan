@@ -4,6 +4,8 @@ using UnityEngine;
 
 public class PelletScript : MonoBehaviour
 {
+
+    public bool isPower;
     void Awake()
     {
         LevelManagerScript.instance.PelletAdd();
@@ -13,6 +15,7 @@ public class PelletScript : MonoBehaviour
     {
         if(other.gameObject.GetComponent<PlayerCharacterScript>()) {
         LevelManagerScript.instance.PelletCollect();
+        LevelManagerScript.instance.PowerPelletCollect();
         gameObject.SetActive(false);
         }
     }

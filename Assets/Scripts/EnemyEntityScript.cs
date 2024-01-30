@@ -12,11 +12,30 @@ public class EnemyEntityScript : MonoBehaviour
 
     new Transform transform;
     Rigidbody2D rb;
-    public NavMeshAgent agent;
+    public NavMeshAgent navAgent;
+    public Collider2D coll;
 
 
-    public enum EnemyState { Generating, Scattering, Chasing, Vulnerable, Fleeing };
-    public EnemyState enemyState;
+    //public enum EnemyState { Generating, Active, Vulnerable, Fleeing };
+    //public EnemyState currentState;
+    //public enum EnemySubState { Scattering, Chasing, CloseChasing };
+    //public EnemySubState currentSubState;
+
+
+
+    public GhostStateBase currentState;
+
+    public GhostState_Generating stateGenerating;
+    public GhostState_Active stateActive;
+    public GhostState_Vulnerable stateVulnerable;
+    public GhostState_Fleeing stateFleeing;
+
+
+
+
+
+
+
 
     public enum GhostAIStyle { Shadow, Bashful, Speedy, Pokey};
     public GhostAIStyle style;
@@ -32,17 +51,33 @@ public class EnemyEntityScript : MonoBehaviour
 
     public Vector2 homeBaseTarget;
     public Vector2 scatterTarget;
-    Vector2 secondaryScatterTarget;
+    public Vector2 vulnerableTarget;
+    public float vulTimeSwitcher;
 
 
     void Awake()
     {
         transform = base.transform;
         rb = GetComponent<Rigidbody2D>();
-        agent = GetComponent<NavMeshAgent>();
-        agent.updateRotation = false;
-        agent.updateUpAxis = false;
+        navAgent = GetComponent<NavMeshAgent>();
+        navAgent.updateRotation = false;
+        navAgent.updateUpAxis = false;
+        navAgent.speed = speed;
+        CreateStateObjects();
+        stateGenerating.EnterState();
     }
+
+    void CreateStateObjects()
+    {
+        stateGenerating = new GhostState_Generating(this);
+        stateActive = new GhostState_Active(this);
+        stateVulnerable = new GhostState_Vulnerable(this);
+        stateFleeing = new GhostState_Fleeing(this);
+    }
+
+
+
+
 
     private void OnTriggerEnter2D(Collider2D collision)
     {
@@ -50,16 +85,21 @@ public class EnemyEntityScript : MonoBehaviour
         PlayerCharacterScript player = collision.GetComponent<PlayerCharacterScript>();
         if(player != null)
         {
-            if (enemyState == EnemyState.Scattering || enemyState == EnemyState.Chasing) LevelManagerScript.instance.Death();
-            else if (enemyState == EnemyState.Vulnerable) Chomp();
+            if (currentState == stateActive) LevelManagerScript.instance.Death();
+            else if (currentState == stateVulnerable)
+            {
+                vulCoroutine.StopAuto();
+                vulCoroutine = null;
+                stateFleeing.EnterState();
+            }
 
         }
     }
 
     public void MakeVulnerable()
     {
-        enemyState = EnemyState.Vulnerable;
-        vulCoroutine = new Coroutine(VulnerableCoroutine(vulnerabilityTime), this);
+        if (currentState != stateActive) return;
+        stateVulnerable.EnterState();
     }
 
 
@@ -67,63 +107,134 @@ public class EnemyEntityScript : MonoBehaviour
     {
         yield return WaitFor.Seconds(time);
         yield return null;
-        enemyState = EnemyState.Chasing;
+        stateActive.EnterState();
         vulCoroutine = null;
     }
 
-
-    private void Chomp()
-    {
-        vulCoroutine.StopAuto();
-        vulCoroutine = null;
-
-    }
 
 
 
     private void Update()
     {
-        if(enemyState == EnemyState.Generating)
+        if (currentState == null)
         {
-            
+            CreateStateObjects();
+            stateGenerating.EnterState();
         }
-        else if (enemyState == EnemyState.Scattering)
+        currentState.StateUpate();
+    }
+    
+
+
+
+
+
+
+
+    public abstract class GhostStateBase
+    {
+        public EnemyEntityScript owner;
+
+        public GhostStateBase(EnemyEntityScript owner) => this.owner = owner;
+
+
+        public void EnterState()
         {
 
+            OnEnterState();
         }
-        else if (enemyState == EnemyState.Chasing)
+
+        protected abstract void OnEnterState();
+
+        public abstract void StateUpate();
+    }
+
+    public class GhostState_Generating : GhostStateBase
+    {
+        public GhostState_Generating(EnemyEntityScript owner) : base(owner) => this.owner = owner;
+
+        float generationTimeLeft;
+
+
+
+        protected override void OnEnterState()
         {
-
-            //https://youtu.be/ataGotQ7ir8?t=370
-            if (style == GhostAIStyle.Shadow)
-            {
-                //Target the player always.
-                agent.destination = player.transform.position;
-            }
-            else if (style == GhostAIStyle.Bashful)
-            {
-                //Target a vector from Shadow to the player rotated 180 degrees.
-            }
-            else if (style == GhostAIStyle.Speedy)
-            {
-                //Target a few spaces in front of the player.
-            }
-            else if (style == GhostAIStyle.Pokey)
-            {
-                //Target the player, but if reaches a radius around the player and the player is facing towards him, run away.
-            }
-            //If very small distance away from player, target player.
-
+            generationTimeLeft = owner.generatingTime;
         }
-        else if (enemyState == EnemyState.Vulnerable)
-        {
 
-        }
-        else if (enemyState == EnemyState.Fleeing)
+        public override void StateUpate()
         {
-
+            if (generationTimeLeft > 0)
+            {
+                owner.transform.position = Vector3.zero + Vector3.right * Mathf.Lerp(-1, 1, Mathf.Sin(Time.time));
+                generationTimeLeft -= Time.deltaTime;
+            }
+            else owner.stateActive.EnterState();
         }
     }
+
+    public class GhostState_Active : GhostStateBase
+    {
+        public GhostState_Active(EnemyEntityScript owner) : base(owner) => this.owner = owner;
+
+        protected override void OnEnterState()
+        {
+
+        }
+
+        public override void StateUpate()
+        {
+            owner.navAgent.destination = owner.player.transform.position;
+        }
+    }
+
+    public class GhostState_Vulnerable : GhostStateBase
+    {
+        public GhostState_Vulnerable(EnemyEntityScript owner) : base(owner) => this.owner = owner;
+
+        float vulnerableTimeLeft;
+        float switchTimeLeft;
+        bool switchVerticle;
+
+        protected override void OnEnterState()
+        {
+            owner.navAgent.destination = owner.vulnerableTarget;
+            vulnerableTimeLeft = owner.vulnerabilityTime;
+            switchTimeLeft = owner.vulTimeSwitcher * 3;
+        }
+
+        public override void StateUpate()
+        {
+            if (vulnerableTimeLeft > 0) vulnerableTimeLeft -= Time.deltaTime;
+            else owner.stateActive.EnterState();
+
+            if (switchTimeLeft > 0) switchTimeLeft -= Time.deltaTime;
+            else
+            {
+                Vector2 switching = switchVerticle ? -Vector2.up : -Vector2.right;
+                owner.vulnerableTarget *= switching;
+                owner.navAgent.destination = owner.vulnerableTarget;
+            }
+        }
+    }
+
+    public class GhostState_Fleeing : GhostStateBase
+    {
+        public GhostState_Fleeing(EnemyEntityScript owner) : base(owner) => this.owner = owner;
+
+        protected override void OnEnterState()
+        {
+            owner.navAgent.destination = owner.homeBaseTarget;
+            owner.coll.enabled = false;
+        }
+
+        public override void StateUpate()
+        {
+            if ((Vector2)owner.transform.position == owner.homeBaseTarget) owner.stateGenerating.EnterState();
+        }
+    }
+
+
 
 
 
@@ -137,18 +248,18 @@ public class EnemyEntityScript : MonoBehaviour
 
         if (pause)
         {
-            lastAgentVelocity = agent.velocity;
+            lastAgentVelocity = navAgent.velocity;
             Debug.Log(lastAgentVelocity);
-            lastAgentPath = agent.path;
-            agent.velocity = Vector3.zero;
-            agent.ResetPath();
+            lastAgentPath = navAgent.path;
+            navAgent.velocity = Vector3.zero;
+            navAgent.ResetPath();
         }
         else
         {
-            agent.velocity = lastAgentVelocity;
-            agent.SetPath(lastAgentPath);
+            navAgent.velocity = lastAgentVelocity;
+            navAgent.SetPath(lastAgentPath);
         }
-        agent.isStopped = pause;
+        navAgent.isStopped = pause;
 
     }
 
