@@ -5,8 +5,14 @@ using UnityEngine;
 public class ControllerInputScript : Singleton<ControllerInputScript>
 {
     public Vector2 controlDirection;
-    
-    
+    GameplayManagerScript manager;
+
+    protected override void OnAwake()
+    {
+
+        manager = GameplayManagerScript.instance;
+    }
+
     void Update()
     {
         bool upPressed = false;
@@ -21,6 +27,10 @@ public class ControllerInputScript : Singleton<ControllerInputScript>
         
         controlDirection.y = upPressed ? 1 : downPressed ? -1: 0;
         controlDirection.x = rightPressed ? 1 : leftPressed ? -1: 0;
+
+        if (Input.GetKeyDown(KeyCode.Escape)) manager.PauseMenuToggle();
+        if (Input.GetKey(KeyCode.Alpha3)) manager.EndGame();
+
     }
     
 

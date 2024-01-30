@@ -11,6 +11,8 @@ public class PlayerCharacterScript : MonoBehaviour
     [SerializeField] float speed;
 
     [SerializeField] private Vector2 levelSize;
+
+    
     
     void Awake()
     {
@@ -20,14 +22,11 @@ public class PlayerCharacterScript : MonoBehaviour
     }
     
     
-    void Update()
-    {
-        
-    }
+
     
     void FixedUpdate()
     {
-        rb.MovePosition((Vector2)transform.position + input.controlDirection*speed*Time.deltaTime);
+        if(!isPaused) rb.MovePosition((Vector2)transform.position + input.controlDirection*speed*Time.deltaTime);
         
         if(Mathf.Abs(transform.position.x) > levelSize.x) transform.position = new Vector3(Mathf.Clamp(-transform.position.x, -levelSize.x, levelSize.x), transform.position.y);
         if(Mathf.Abs(transform.position.y) > levelSize.y) transform.position = new Vector3(transform.position.x, Mathf.Clamp(-transform.position.y, -levelSize.y, levelSize.y));
@@ -35,4 +34,10 @@ public class PlayerCharacterScript : MonoBehaviour
     }
 
     public void SetLevelSize(Vector2 size) => levelSize = size;
+
+    bool isPaused;
+    public void SetPause(bool pause = true)
+    {
+        isPaused = pause;
+    }
 }
