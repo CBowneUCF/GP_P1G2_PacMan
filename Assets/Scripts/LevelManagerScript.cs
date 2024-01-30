@@ -12,7 +12,8 @@ public class LevelManagerScript : Singleton<LevelManagerScript>
     public PlayerCharacterScript player;
     public EnemyEntityScript[] enemies;
     GameplayManagerScript gameplayManager;
-
+    public int points;
+    public int pointsPerPellet;
 
 
     Vector2 playerStartPos;
@@ -38,7 +39,8 @@ public class LevelManagerScript : Singleton<LevelManagerScript>
 
     public void PelletCollect(){  
         pelletsLeft--;
-        if(pelletsLeft == 0)Win();
+        points += pointsPerPellet;
+        if (pelletsLeft == 0)Win();
 
     }
 
