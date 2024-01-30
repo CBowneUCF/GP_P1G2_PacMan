@@ -5467,7 +5467,7 @@ NavMeshAgent:
   m_AgentTypeID: 0
   m_Radius: 0.3
   m_Speed: 3.5
-  m_Acceleration: 8
+  m_Acceleration: 100
   avoidancePriority: 50
   m_AngularSpeed: 120
   m_StoppingDistance: 0
@@ -5490,7 +5490,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 64636770a47ddfb4b85c6bbc7a97e8b7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  enemyState: 1
+  agent: {fileID: 0}
+  enemyState: 2
   style: 0
   speed: 1
   vulnerabilityTime: 0
@@ -9394,8 +9395,13 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   levelID: 0
   pelletsLeft: 0
-  player: {fileID: 0}
-  enemies: []
+  player: {fileID: 1930796912}
+  enemies:
+  - {fileID: 1556407121}
+  - {fileID: 199298695}
+  - {fileID: 1018352593}
+  - {fileID: 992907514}
+  roundTimer: 0
 --- !u!1001 &443502694
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -17144,7 +17150,7 @@ NavMeshAgent:
   m_AgentTypeID: 0
   m_Radius: 0.3
   m_Speed: 3.5
-  m_Acceleration: 8
+  m_Acceleration: 100
   avoidancePriority: 50
   m_AngularSpeed: 120
   m_StoppingDistance: 0
@@ -17167,7 +17173,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 64636770a47ddfb4b85c6bbc7a97e8b7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  enemyState: 1
+  agent: {fileID: 0}
+  enemyState: 2
   style: 0
   speed: 1
   vulnerabilityTime: 0
@@ -17572,7 +17579,7 @@ NavMeshAgent:
   m_AgentTypeID: 0
   m_Radius: 0.3
   m_Speed: 3.5
-  m_Acceleration: 8
+  m_Acceleration: 100
   avoidancePriority: 50
   m_AngularSpeed: 120
   m_StoppingDistance: 0
@@ -17595,7 +17602,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 64636770a47ddfb4b85c6bbc7a97e8b7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  enemyState: 1
+  agent: {fileID: 0}
+  enemyState: 2
   style: 0
   speed: 1
   vulnerabilityTime: 0
@@ -24540,7 +24548,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 64636770a47ddfb4b85c6bbc7a97e8b7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  enemyState: 1
+  agent: {fileID: 0}
+  enemyState: 2
   style: 0
   speed: 1
   vulnerabilityTime: 0
@@ -24559,7 +24568,7 @@ NavMeshAgent:
   m_AgentTypeID: 0
   m_Radius: 0.3
   m_Speed: 3.5
-  m_Acceleration: 8
+  m_Acceleration: 100
   avoidancePriority: 50
   m_AngularSpeed: 120
   m_StoppingDistance: 0
@@ -28927,9 +28936,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   speed: 5
   levelSize: {x: 10, y: 11.5}
-  grid: {fileID: 396827932}
-  gridPos: {x: 0, y: 0}
-  isWalk: 0
 --- !u!212 &1930796913
 SpriteRenderer:
   m_ObjectHideFlags: 0

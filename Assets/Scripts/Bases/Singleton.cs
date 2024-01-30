@@ -10,7 +10,22 @@ using UnityEngine;
 public class Singleton<T> : MonoBehaviour where T : Singleton<T>
 {
     private static T Instance;
-    public static T instance { get { return Instance; } }
+    public static T instance { get { 
+            if (Instance == null)
+            {
+                T findAttempt =  FindObjectOfType<T>();
+                if (findAttempt != null)
+                {
+                    findAttempt.Awake();
+                    return findAttempt;
+                } 
+                else
+                {
+                    Debug.LogWarning("There's no Singleton of that type in this scene.");
+                    return null;
+                }
+            }
+            else return Instance; } }
 
     public static bool IsInitialized
     {
@@ -20,7 +35,7 @@ public class Singleton<T> : MonoBehaviour where T : Singleton<T>
 
     private void Awake()
     {
-        if (Instance != null)
+        if (Instance != null && Instance != this)
         {
             Debug.LogError(
                 "Something or someone is attempting to create a second " + 

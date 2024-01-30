@@ -12,7 +12,7 @@ public class EnemyEntityScript : MonoBehaviour
 
     new Transform transform;
     Rigidbody2D rb;
-    NavMeshAgent agent;
+    public NavMeshAgent agent;
 
 
     public enum EnemyState { Generating, Scattering, Chasing, Vulnerable, Fleeing };
@@ -44,14 +44,13 @@ public class EnemyEntityScript : MonoBehaviour
         agent.updateUpAxis = false;
     }
 
-    
-
     private void OnTriggerEnter2D(Collider2D collision)
     {
+        
         PlayerCharacterScript player = collision.GetComponent<PlayerCharacterScript>();
         if(player != null)
         {
-            if (enemyState == EnemyState.Scattering || enemyState == EnemyState.Chasing) player.Kill();
+            if (enemyState == EnemyState.Scattering || enemyState == EnemyState.Chasing) LevelManagerScript.instance.Death();
             else if (enemyState == EnemyState.Vulnerable) Chomp();
 
         }
@@ -99,6 +98,7 @@ public class EnemyEntityScript : MonoBehaviour
             if (style == GhostAIStyle.Shadow)
             {
                 //Target the player always.
+                agent.destination = player.transform.position;
             }
             else if (style == GhostAIStyle.Bashful)
             {
@@ -128,7 +128,29 @@ public class EnemyEntityScript : MonoBehaviour
 
 
 
+    bool isPaused;
+    Vector2 lastAgentVelocity;
+    NavMeshPath lastAgentPath;
+    public void SetPause(bool pause = true)
+    {
+        isPaused = pause;
 
+        if (pause)
+        {
+            lastAgentVelocity = agent.velocity;
+            Debug.Log(lastAgentVelocity);
+            lastAgentPath = agent.path;
+            agent.velocity = Vector3.zero;
+            agent.ResetPath();
+        }
+        else
+        {
+            agent.velocity = lastAgentVelocity;
+            agent.SetPath(lastAgentPath);
+        }
+        agent.isStopped = pause;
+
+    }
 
 
 

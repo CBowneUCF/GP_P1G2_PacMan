@@ -1,117 +1,160 @@
 using System.Collections;
 using System.Collections.Generic;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
 public class GameplayManagerScript : Singleton<GameplayManagerScript>
 {
-    public bool inMainMenu;
-    public bool inLevel;
-    public bool isPaused;
-    public bool isInPauseMenu;
-    public bool isLoading;
-    public bool isGameOver;
-    public int startingLifeCount;
-    public int currentLifeCount;
-    public string[] levelIDs;
-    public int currentLevelID;
+
+
+    public bool debug;
+
+
 
     protected override void OnAwake()
     {
-        //For Test Purposes.
-        currentLifeCount = startingLifeCount;
-        currentLevelID = 0;
-        LoadUnloadLevel();
+        MainMenuToggle(true);     
 
     }
 
-
-
-
-
-
-
-
-
-
-
-
-    void LoadUnloadLevel(bool load = true)
+    private void Update()
     {
-        if (inLevel && load)
+        if (!debug) return;
+        //Also for Test Purposes
+        //if (Input.GetKeyDown(KeyCode.P) && !inMainMenu && !isGameOver && !isInPauseMenu) PauseMenuToggle();
+        if (inMainMenu)
         {
-            Debug.LogError("You're already in a level. Unload first.");
-            return;
+            if (Input.GetKeyDown(KeyCode.Q)) BeginGame();
+            if (Input.GetKeyDown(KeyCode.E)) EndGame();
         }
-        string levelToLoad = levelIDs[currentLevelID];
-        if (load)
+        else if (isInPauseMenu)
         {
-            SceneManager.LoadScene(levelToLoad, LoadSceneMode.Additive);
-            level = FindObjectOfType<LevelManagerScript>();
+            if (Input.GetKeyDown(KeyCode.Q)) ReturnToMenu();
+            if (Input.GetKeyDown(KeyCode.R)) EndGame();
         }
-        else
+        else if (isGameOver)
         {
-            SceneManager.UnloadSceneAsync(levelToLoad);
-            level = null;
+            if (Input.GetKeyDown(KeyCode.R)) BeginGame();
+            if (Input.GetKeyDown(KeyCode.E)) ReturnToMenu();
         }
-    }
-    LevelManagerScript level;
+        if (Input.GetKeyDown(KeyCode.L)) GameOver();
 
+
+
+
+    }
+
+
+    public bool inMainMenu;
+    public GameObject mainMenuObject;
+    public void MainMenuToggle(bool On)
+    {
+        inMainMenu = On;
+        mainMenuObject.SetActive(On);
+    }
+
+    public bool inLevel;
+    public int currentLevelID = -1;
+    public string[] levelIDs;
+    public LevelManagerScript levelMan;
+
+    void LoadUnloadLevel(int levelID)
+    {
+        if(currentLevelID > -1)
+        {
+            SceneManager.UnloadSceneAsync(levelIDs[currentLevelID]);
+            levelMan = null;
+            currentLevelID = -1;
+        }
+        inLevel = false;
+        if (levelID == -1) return;
+
+        SceneManager.LoadScene(levelIDs[levelID], LoadSceneMode.Additive);
+        //levelMan = LevelManagerScript.instance;
+        //levelMan = FindObjectOfType<LevelManagerScript>();
+        //if (levelMan == null) Debug.LogWarning("What");
+        currentLevelID = levelID;
+    }
+
+    public void BeginGame()
+    {
+        currentLifeCount = startingLifeCount;
+        LoadUnloadLevel(0);
+        inMainMenu = false;
+        isGameOver = false;
+        mainMenuObject.SetActive(false);
+        gameOverObject.SetActive(false);
+    }
+
+
+
+    public bool isPaused;
+    public bool isInPauseMenu;
+    public GameObject pauseMenuObject;
 
     public void PauseMenuToggle()
     {
-        if(!inLevel || isLoading || isGameOver || inMainMenu)
+        if (inMainMenu || isGameOver) return;
+
+        if (!inLevel || isGameOver || inMainMenu)
         if (!isInPauseMenu)
         {
-            isPaused = true;
-            PauseGame(true); 
-            //Enable Pause Menu
+            isInPauseMenu = true;
+            PauseGame(true);
+            pauseMenuObject.SetActive(true);
         }
         else
         {
-            isPaused = false;
-            //Disable Pause Menu
+            isInPauseMenu = false;
             PauseGame(false); 
+            pauseMenuObject.SetActive(false);
         }
     }
 
 
     void PauseGame(bool pausing = true)
     {
-        level.PauseLevel(pausing);
+        levelMan.PauseLevel(pausing);
+        isPaused = true;
     }
 
 
 
 
-    public void PlayerDie()
+
+    public bool isGameOver;
+    public int startingLifeCount = 3;
+    public int currentLifeCount;
+    public GameObject gameOverObject;
+
+    public void GameOver()
     {
+        isGameOver = true;
+        gameOverObject.SetActive(true);
         PauseGame(true);
-        if (--currentLifeCount == 0)
-        {
-            //Enable Gameover Screen
-        }
     }
 
 
 
-
-
-    public void Retry()
-    {
-        //Disable Game Over menu.
-        //Unload current level and reload first level.
-    }
     public void ReturnToMenu()
     {
-        //Disable Pause and Game Over Menus.
-        //Enable Main Menu
-        //Unload Level
+        isInPauseMenu = false;
+        PauseGame(false);
+        pauseMenuObject.SetActive(false);
+        isGameOver = false;
+        gameOverObject.SetActive(false);
+
+        MainMenuToggle(true);
+
+        LoadUnloadLevel(-1);
+
     }
     public void EndGame()
     {
         //K I L L
         Application.Quit();
+        EditorApplication.isPlaying = false;
     }
 
 
