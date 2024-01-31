@@ -13,7 +13,7 @@ GameObject:
   - component: {fileID: 7085499181349935183}
   - component: {fileID: 3687457499864468519}
   - component: {fileID: 9038310989929600294}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Ghost4 (Clyde)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -28,7 +28,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 146840278666707806}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 6, y: -3.5, z: 0}
+  m_LocalPosition: {x: 0, y: 0.5, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -99,15 +99,25 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 64636770a47ddfb4b85c6bbc7a97e8b7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  agent: {fileID: 0}
-  enemyState: 2
-  style: 0
-  speed: 1
-  vulnerabilityTime: 0
-  generatingTime: 0
+  navAgent: {fileID: 0}
+  collider: {fileID: 0}
+  sprite: {fileID: 0}
+  style: 3
+  speed: 2.5
+  vulnerabilityTime: 10
+  generatingTimeStart: 5
+  generatingTimeRange: {x: 2, y: 10}
   player: {fileID: 0}
-  homeBaseTarget: {x: 0, y: 0}
-  scatterTarget: {x: 0, y: 0}
+  homeBaseTarget: {x: 0, y: 0.5}
+  scatterTarget: {x: 9, y: -10.5}
+  vulnerableTarget: {x: 9, y: -10.5}
+  vulTimeSwitcher: 3
+  hotPursuitRadius: 3
+  pokeyScareRadius: 8
+  bashfulFollowee: {fileID: 0}
+  playerAndCollMask:
+    serializedVersion: 2
+    m_Bits: 72
 --- !u!195 &3687457499864468519
 NavMeshAgent:
   m_ObjectHideFlags: 0
@@ -117,7 +127,7 @@ NavMeshAgent:
   m_GameObject: {fileID: 146840278666707806}
   m_Enabled: 1
   m_AgentTypeID: 0
-  m_Radius: 0.3
+  m_Radius: 0.1
   m_Speed: 3.5
   m_Acceleration: 100
   avoidancePriority: 50
@@ -129,7 +139,7 @@ NavMeshAgent:
   m_Height: 1
   m_BaseOffset: 0.5
   m_WalkableMask: 4294967295
-  m_ObstacleAvoidanceType: 4
+  m_ObstacleAvoidanceType: 0
 --- !u!58 &9038310989929600294
 CircleCollider2D:
   m_ObjectHideFlags: 0

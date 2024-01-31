@@ -13,7 +13,7 @@ GameObject:
   - component: {fileID: 1748401781342753515}
   - component: {fileID: 6593111036055208131}
   - component: {fileID: 8703496407927825512}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Player
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -84,6 +84,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   speed: 5
   levelSize: {x: 10, y: 11.5}
+  currentDirection: {x: 0, y: 0}
 --- !u!50 &6593111036055208131
 Rigidbody2D:
   serializedVersion: 4
