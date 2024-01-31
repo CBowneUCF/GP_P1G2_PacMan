@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using TMPro;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -8,8 +9,17 @@ public class GameplayManagerScript : Singleton<GameplayManagerScript>
 {
 
 
-    public bool debug;
-
+    [SerializeField]bool debug;
+    public int points
+    {
+        get => _points;
+        set
+        {
+            _points = value;
+            if(scoreTextObj != null) scoreTextObj.text = value.ToString();
+        }
+    }
+    int _points;
 
 
     protected override void OnAwake()
@@ -47,16 +57,15 @@ public class GameplayManagerScript : Singleton<GameplayManagerScript>
 
 
     public bool inMainMenu;
-    public GameObject mainMenuObject;
     public void MainMenuToggle(bool On)
     {
         inMainMenu = On;
         mainMenuObject.SetActive(On);
     }
 
-    public bool inLevel;
-    public int currentLevelID = -1;
-    public string[] levelIDs;
+    bool inLevel;
+    int currentLevelID = -1;
+    [SerializeField] string[] levelIDs;
     public LevelManagerScript levelMan;
 
     void LoadUnloadLevel(int levelID)
@@ -85,13 +94,13 @@ public class GameplayManagerScript : Singleton<GameplayManagerScript>
         isGameOver = false;
         mainMenuObject.SetActive(false);
         gameOverObject.SetActive(false);
+        inGameHUDObject.SetActive(true);
     }
 
 
 
-    public bool isPaused;
-    public bool isInPauseMenu;
-    public GameObject pauseMenuObject;
+    [HideInInspector] public bool isPaused;
+    bool isInPauseMenu;
 
     public void PauseMenuToggle()
     {
@@ -123,10 +132,18 @@ public class GameplayManagerScript : Singleton<GameplayManagerScript>
 
 
 
-    public bool isGameOver;
+    [HideInInspector] public bool isGameOver;
     public int startingLifeCount = 3;
-    public int currentLifeCount;
-    public GameObject gameOverObject;
+    [HideInInspector] public int currentLifeCount
+    {
+        get => _currentLifeCount; set
+        {
+            _currentLifeCount = value;
+            livesTextObj.text = value.ToString();
+        }
+    }
+
+    private int _currentLifeCount;
 
     public void GameOver()
     {
@@ -144,6 +161,7 @@ public class GameplayManagerScript : Singleton<GameplayManagerScript>
         pauseMenuObject.SetActive(false);
         isGameOver = false;
         gameOverObject.SetActive(false);
+        inGameHUDObject.SetActive(false);
 
         MainMenuToggle(true);
 
@@ -156,6 +174,15 @@ public class GameplayManagerScript : Singleton<GameplayManagerScript>
         Application.Quit();
         EditorApplication.isPlaying = false;
     }
+
+
+
+    [SerializeField] GameObject mainMenuObject;
+    [SerializeField] GameObject inGameHUDObject;
+    [SerializeField] GameObject pauseMenuObject;
+    [SerializeField] GameObject gameOverObject;
+    [SerializeField] TextMeshProUGUI livesTextObj;
+    [SerializeField] TextMeshProUGUI scoreTextObj;
 
 
 }
