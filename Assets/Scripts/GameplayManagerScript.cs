@@ -9,6 +9,7 @@ public class GameplayManagerScript : Singleton<GameplayManagerScript>
 
 
     public bool debug;
+    public int points;
 
 
 
@@ -116,7 +117,7 @@ public class GameplayManagerScript : Singleton<GameplayManagerScript>
     void PauseGame(bool pausing = true)
     {
         levelMan.PauseLevel(pausing);
-        isPaused = true;
+        isPaused = pausing;
     }
 
 

@@ -12,23 +12,38 @@ public class LevelManagerScript : Singleton<LevelManagerScript>
     public PlayerCharacterScript player;
     public EnemyEntityScript[] enemies;
     GameplayManagerScript gameplayManager;
-    public int points;
     public int pointsPerPellet;
-
+    public GameObject pellets;
 
     Vector2 playerStartPos;
     List<Vector2> enemyStartPos = new List<Vector2>();
 
     public float roundTimer;
+    public float scatterChaseSwitcher = 4;
+    bool makeChase = true;
 
 
     protected override void OnAwake() {
         gameplayManager = GameplayManagerScript.instance;
         gameplayManager.levelMan = this;
-        GameObject pellets = GameObject.FindGameObjectsWithTag("Pellets")[0];
-        pellets.transform.GetChild(0).gameObject.SetActive(true);
+        pellets.SetActive(true);
         playerStartPos = player.transform.position;
-        for (int i = 0; i < enemies.Length; i++) enemyStartPos.Add(enemies[i].transform.position);
+        for (int i = 0; i < enemies.Length; i++)
+        {
+            enemyStartPos.Add(enemies[i].transform.position);
+            
+        }
+    }
+
+    private void Update()
+    {
+        if (!gameplayManager.isPaused) roundTimer += Time.deltaTime;
+        if(roundTimer >= scatterChaseSwitcher * (makeChase ? 1 : 4))
+        {
+            roundTimer = 0;
+            for (int i = 0; i < enemies.Length; i++) enemies[i].ScatterChaseSwitch(makeChase);
+            makeChase = !makeChase;
+        }
     }
 
 
@@ -39,7 +54,7 @@ public class LevelManagerScript : Singleton<LevelManagerScript>
 
     public void PelletCollect(){  
         pelletsLeft--;
-        points += pointsPerPellet;
+        gameplayManager.points += pointsPerPellet;
         if (pelletsLeft == 0)Win();
 
     }
@@ -80,7 +95,8 @@ public class LevelManagerScript : Singleton<LevelManagerScript>
             for (int i = 0; i < enemies.Length; i++)
             {
                 enemies[i].transform.position = enemyStartPos[i];
-                enemies[i].stateGenerating.EnterState();
+                enemies[i].Begin();
+                roundTimer = 0;
             }
         }
     }

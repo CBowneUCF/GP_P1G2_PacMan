@@ -15,7 +15,7 @@ public class PelletScript : MonoBehaviour
     {
         if(other.gameObject.GetComponent<PlayerCharacterScript>()) {
         LevelManagerScript.instance.PelletCollect();
-        LevelManagerScript.instance.PowerPelletCollect();
+        if(isPower)LevelManagerScript.instance.PowerPelletCollect();
         gameObject.SetActive(false);
         }
     }

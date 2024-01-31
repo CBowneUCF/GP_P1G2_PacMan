@@ -1,4 +1,4 @@
-using AStarSystem;
+using JetBrains.Annotations;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
@@ -12,23 +12,11 @@ public class EnemyEntityScript : MonoBehaviour
 
     new Transform transform;
     Rigidbody2D rb;
-    public NavMeshAgent navAgent;
-    public Collider2D coll;
+    [HideInInspector] public NavMeshAgent navAgent;
+    [HideInInspector] new public Collider2D collider;
+    [HideInInspector] public SpriteRenderer sprite;
 
 
-    //public enum EnemyState { Generating, Active, Vulnerable, Fleeing };
-    //public EnemyState currentState;
-    //public enum EnemySubState { Scattering, Chasing, CloseChasing };
-    //public EnemySubState currentSubState;
-
-
-
-    public GhostStateBase currentState;
-
-    public GhostState_Generating stateGenerating;
-    public GhostState_Active stateActive;
-    public GhostState_Vulnerable stateVulnerable;
-    public GhostState_Fleeing stateFleeing;
 
 
 
@@ -45,14 +33,25 @@ public class EnemyEntityScript : MonoBehaviour
     public float vulnerabilityTime;
     Coroutine vulCoroutine;
 
-    public float generatingTime;
+    public float generatingTimeStart;
+    public Vector2 generatingTimeRange;
 
-    public GameObject player;
-
+    public PlayerCharacterScript player;
+        
+        
     public Vector2 homeBaseTarget;
     public Vector2 scatterTarget;
     public Vector2 vulnerableTarget;
     public float vulTimeSwitcher;
+
+    public float hotPursuitRadius;
+    public float pokeyScareRadius;
+    public Transform bashfulFollowee;
+
+
+    //[SerializeField] string seeStateName;
+    //[SerializeField] string seeSubStateName;
+    public LayerMask playerAndCollMask;
 
 
     void Awake()
@@ -63,19 +62,26 @@ public class EnemyEntityScript : MonoBehaviour
         navAgent.updateRotation = false;
         navAgent.updateUpAxis = false;
         navAgent.speed = speed;
+        collider = GetComponent<Collider2D>();
+        sprite = GetComponent<SpriteRenderer>();
         CreateStateObjects();
-        stateGenerating.EnterState();
+        Begin();
     }
 
     void CreateStateObjects()
     {
         stateGenerating = new GhostState_Generating(this);
-        stateActive = new GhostState_Active(this);
         stateVulnerable = new GhostState_Vulnerable(this);
         stateFleeing = new GhostState_Fleeing(this);
+        stateActive = new GhostState_Active(this);
+        stateActive.style = style;
     }
 
-
+    public void Begin()
+    {
+        stateGenerating.EnterState();
+        stateGenerating.generationTimeLeft = generatingTimeStart;
+    }
 
 
 
@@ -85,52 +91,35 @@ public class EnemyEntityScript : MonoBehaviour
         PlayerCharacterScript player = collision.GetComponent<PlayerCharacterScript>();
         if(player != null)
         {
-            if (currentState == stateActive) LevelManagerScript.instance.Death();
-            else if (currentState == stateVulnerable)
-            {
-                vulCoroutine.StopAuto();
-                vulCoroutine = null;
-                stateFleeing.EnterState();
-            }
+            if (currentStateObject == stateActive) LevelManagerScript.instance.Death();
+            else if (currentStateObject == stateVulnerable) stateFleeing.EnterState();
 
         }
     }
-
-    public void MakeVulnerable()
-    {
-        if (currentState != stateActive) return;
-        stateVulnerable.EnterState();
-    }
-
-
-    IEnumerator VulnerableCoroutine(float time)
-    {
-        yield return WaitFor.Seconds(time);
-        yield return null;
-        stateActive.EnterState();
-        vulCoroutine = null;
-    }
-
-
 
 
     private void Update()
     {
-        if (currentState == null)
+        if (isPaused) return; 
+        if (currentStateObject == null)
         {
             CreateStateObjects();
             stateGenerating.EnterState();
         }
-        currentState.StateUpate();
+        currentStateObject.StateUpate();
+        //seeStateName = currentStateObject.ToString();
+        //seeSubStateName = stateActive.subState.ToString();
     }
-    
 
 
 
 
 
+    #region States
 
+    #region StateDefinitions
 
+    public enum GhostState {Generating, Active, Vulnerable, Fleeing}
     public abstract class GhostStateBase
     {
         public EnemyEntityScript owner;
@@ -140,7 +129,7 @@ public class EnemyEntityScript : MonoBehaviour
 
         public void EnterState()
         {
-
+            owner.currentStateObject = this;
             OnEnterState();
         }
 
@@ -149,45 +138,154 @@ public class EnemyEntityScript : MonoBehaviour
         public abstract void StateUpate();
     }
 
+    GhostState_Generating stateGenerating;
     public class GhostState_Generating : GhostStateBase
     {
         public GhostState_Generating(EnemyEntityScript owner) : base(owner) => this.owner = owner;
 
-        float generationTimeLeft;
-
+        public float generationTimeLeft;
+        float randomOffset;
 
 
         protected override void OnEnterState()
         {
-            generationTimeLeft = owner.generatingTime;
+            generationTimeLeft = Random.Range(owner.generatingTimeRange.x, owner.generatingTimeRange.y);
+            owner.sprite.color = Color.white;
+            randomOffset = Random.Range(10f, -10f);
+            owner.collider.enabled = true;
+            owner.navAgent.enabled = false;
         }
 
         public override void StateUpate()
         {
+
             if (generationTimeLeft > 0)
             {
-                owner.transform.position = Vector3.zero + Vector3.right * Mathf.Lerp(-1, 1, Mathf.Sin(Time.time));
                 generationTimeLeft -= Time.deltaTime;
+                owner.transform.position = owner.homeBaseTarget + Vector2.right * TriangleWave(generationTimeLeft + randomOffset, 3);
             }
             else owner.stateActive.EnterState();
         }
+
+        //Courtesy of Wikipedia.
+        float TriangleWave(float x, float p)
+        {
+            float f1 = Mathf.Floor((x / p) + 0.5f);
+            float f2 = (x / p) - f1;
+            float f3 = Mathf.Abs(2 * f2);
+            float f4 = 2 * f3 - 1;
+            return f4;
+
+        }
+
     }
 
+    GhostState_Active stateActive;
     public class GhostState_Active : GhostStateBase
     {
         public GhostState_Active(EnemyEntityScript owner) : base(owner) => this.owner = owner;
 
         protected override void OnEnterState()
         {
-
+            owner.sprite.color = Color.white;
+            owner.navAgent.enabled = true;
+            style = owner.style;
+            subState = GhostSubState.Scatter;
         }
 
         public override void StateUpate()
         {
+            playerPos = owner.player.transform.position;
+            enemyPos = owner.transform.position;
+            distance = Vector2.Distance(playerPos, enemyPos);
+
+            if (distance <= owner.hotPursuitRadius && subState != GhostSubState.HotPursuit)
+            {
+                backupSubState = subState;
+                subState = GhostSubState.HotPursuit;
+                HotUpdate();
+                return;
+            }
+            else if (distance > owner.hotPursuitRadius && subState == GhostSubState.HotPursuit && backupSubState != GhostSubState.HotPursuit)
+            {
+                subState = backupSubState;
+            }
+
+            switch (subState)
+            {
+                case GhostSubState.Scatter:     ScatterUpdate();    break;
+                case GhostSubState.Chase:       ChaseUpdate();      break;
+                case GhostSubState.HotPursuit:  HotUpdate();        break;
+                default:                        ScatterUpdate();    break;
+            }
+        }
+
+        public enum GhostSubState { Scatter, Chase, HotPursuit }
+        public GhostSubState subState = GhostSubState.Scatter;
+        GhostSubState backupSubState = GhostSubState.HotPursuit;
+        public GhostAIStyle style;
+        Vector2 playerPos;
+        Vector2 enemyPos;
+        float distance;
+        bool isScattering;
+
+        void ScatterUpdate()
+        {
+            if (!isScattering)
+            {
+                owner.navAgent.destination = owner.scatterTarget;
+                isScattering = true;
+            }
+        }
+        void ChaseUpdate()
+        {
+            isScattering = false;
+            switch (style)
+            {
+                case GhostAIStyle.Shadow:
+                default:
+                    {
+                        owner.navAgent.destination = owner.player.transform.position;
+                    }
+                    break;
+                case GhostAIStyle.Bashful:
+                    {
+                        Vector2 pacmanPos = owner.player.transform.position;
+                        Vector2 leaderPos = owner.bashfulFollowee.position;
+                        owner.navAgent.destination = ((pacmanPos - leaderPos) * 2) + leaderPos;
+                    }
+                    break;
+                case GhostAIStyle.Speedy:
+                    {
+                        owner.navAgent.destination = (Vector2)owner.player.transform.position + (owner.player.currentDirection * 3);
+                    }
+                    break;
+                case GhostAIStyle.Pokey:
+                    {
+                        owner.navAgent.destination = playerPos;
+                        if (distance > owner.pokeyScareRadius || owner.player.currentDirection == Vector2.zero) return;
+                        Vector2 direction = (playerPos - enemyPos).normalized;
+                        RaycastHit2D hit = Physics2D.Raycast(enemyPos, direction, distance, owner.playerAndCollMask);
+                        if (hit.transform != owner.player.transform) return;
+                        float angle = Vector2.Angle(-direction, owner.player.currentDirection);
+                        if (angle < 60)
+                        {
+                            Debug.Log("Clyde: AAAAAAAAAAAAAAAAAAA");
+                            subState = GhostSubState.Scatter;
+                        }
+                    }
+                    break;
+            }
+        }
+        void HotUpdate()
+        {
+            isScattering = false;
             owner.navAgent.destination = owner.player.transform.position;
         }
+
     }
 
+    GhostState_Vulnerable stateVulnerable;
     public class GhostState_Vulnerable : GhostStateBase
     {
         public GhostState_Vulnerable(EnemyEntityScript owner) : base(owner) => this.owner = owner;
@@ -201,6 +299,7 @@ public class EnemyEntityScript : MonoBehaviour
             owner.navAgent.destination = owner.vulnerableTarget;
             vulnerableTimeLeft = owner.vulnerabilityTime;
             switchTimeLeft = owner.vulTimeSwitcher * 3;
+            owner.sprite.color = Color.blue;
         }
 
         public override void StateUpate()
@@ -218,6 +317,7 @@ public class EnemyEntityScript : MonoBehaviour
         }
     }
 
+    GhostState_Fleeing stateFleeing;
     public class GhostState_Fleeing : GhostStateBase
     {
         public GhostState_Fleeing(EnemyEntityScript owner) : base(owner) => this.owner = owner;
@@ -225,7 +325,8 @@ public class EnemyEntityScript : MonoBehaviour
         protected override void OnEnterState()
         {
             owner.navAgent.destination = owner.homeBaseTarget;
-            owner.coll.enabled = false;
+            owner.collider.enabled = false;
+            owner.sprite.color = Color.white * 0.5f;
         }
 
         public override void StateUpate()
@@ -234,10 +335,61 @@ public class EnemyEntityScript : MonoBehaviour
         }
     }
 
+    #endregion StateDefinitions
+
+    #region StateChangers
+
+    GhostStateBase currentStateObject;
+    /*
+    GhostState currentState
+    {
+        get
+        {
+            return currentStateObject switch
+            {
+                GhostStateBase o when o == stateGenerating => GhostState.Generating,
+                GhostStateBase o when o == stateActive     => GhostState.Active,
+                GhostStateBase o when o == stateVulnerable => GhostState.Vulnerable,
+                GhostStateBase o when o == stateFleeing    => GhostState.Fleeing,
+                _ => GhostState.Generating
+            };
+        }
+    }
+    public void SetState(GhostState state)
+    {
+        GhostStateBase result =
+        state switch
+        {
+            GhostState.Generating => stateGenerating,
+            GhostState.Active => stateActive,
+            GhostState.Vulnerable => stateVulnerable,
+            GhostState.Fleeing => stateFleeing,
+            _ => stateGenerating
+        };
+        result.EnterState();
+    }
+     */
+
+    public void MakeVulnerable()
+    {
+        if (currentStateObject != stateActive) return;
+        stateVulnerable.EnterState();
+    }
 
 
+    public void ScatterChaseSwitch(bool makeChase)
+    {
+        if (currentStateObject != stateActive) return;
+        if (stateActive.subState == GhostState_Active.GhostSubState.HotPursuit) return;
+        stateActive.subState = (makeChase) ? GhostState_Active.GhostSubState.Chase : GhostState_Active.GhostSubState.Scatter;
+    }
+
+    #endregion StateChangers
+
+    #endregion States
 
 
+    #region Pausing
 
     bool isPaused;
     Vector2 lastAgentVelocity;
@@ -246,10 +398,12 @@ public class EnemyEntityScript : MonoBehaviour
     {
         isPaused = pause;
 
+        if (!navAgent.enabled) return;
+
         if (pause)
         {
             lastAgentVelocity = navAgent.velocity;
-            Debug.Log(lastAgentVelocity);
+            //Debug.Log(lastAgentVelocity);
             lastAgentPath = navAgent.path;
             navAgent.velocity = Vector3.zero;
             navAgent.ResetPath();
@@ -261,91 +415,14 @@ public class EnemyEntityScript : MonoBehaviour
         }
         navAgent.isStopped = pause;
 
-    }
-
-
-
-
-
-
-    // A* Attempt. (Honestly seems like the tutorial guy just doesn't know what he's doing.)
-    //https://youtu.be/mZfyt03LDH4?list=PLFt_AvWsXl0cq5Umv3pMC9SPnKjfp9eGW&t=779
-
-    /*
-
-    private void Update()
-    {
-        gridPos = grid.NodeFromWorldPoint(transform.position).worldPosition;
-        if (chaseCheckTime >= 0) chaseCheckTime -= Time.deltaTime;
-        else if (chaseCheckTime < 0)
-        {
-            chaseCheckTime = 5f;
-
-            bool successfulPath = grid.FindPath(out currentPath, transform.position, player.transform.position);
-            if (successfulPath)
-            {
-
-                //if (followingCo!=null) if(followingCo.running) followingCo.StopAuto();
-                followingCo = new Coroutine(FollowPath(currentPath), this);
-            }
-        }
 
     }
 
-    public AGrid grid;
-    Vector2[] currentPath;
-    int targetIndex;
-
-    public bool testChase;
-    public float chaseCheckTime = 5f;
-    public Vector2 gridPos;
-
-    Coroutine followingCo;
-    IEnumerator FollowPath(Vector2[] path)
-    {
-        if (path.Length < 1) yield break;
-        Vector3 currentWaypoint = path[0];
-        while (true)
-        {
-            if (transform.position == currentWaypoint)
-            {
-                targetIndex++;
-                if (targetIndex >= path.Length)
-                {
-                    yield break;
-                }
-                currentWaypoint = path[targetIndex];
-            }
-
-            transform.position = Vector3.MoveTowards(transform.position, currentWaypoint, speed * Time.deltaTime);
-            yield return null;
-
-        }
-    }
-
-        public void OnDrawGizmos()
-    {
-        if (currentPath != null)
-        {
-            for (int i = targetIndex; i < currentPath.Length; i++)
-            {
-                Gizmos.color = Color.black;
-                Gizmos.DrawCube(currentPath[i], Vector3.one);
-
-                if (i == targetIndex)
-                {
-                    Gizmos.DrawLine(transform.position, currentPath[i]);
-                }
-                else
-                {
-                    Gizmos.DrawLine(currentPath[i - 1], currentPath[i]);
-                }
-            }
-        }
-    }
+    #endregion Pausing
 
 
-     */
+
+
 
 
 }
