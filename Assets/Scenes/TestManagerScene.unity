@@ -291,6 +291,8 @@ MonoBehaviour:
   debug: 1
   inMainMenu: 0
   levelIDs:
+  - Scenes/Level3
+  - Scenes/Level2
   - Scenes/Level1
   levelMan: {fileID: 0}
   isPaused: 0
