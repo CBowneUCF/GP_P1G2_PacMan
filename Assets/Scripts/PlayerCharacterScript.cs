@@ -9,9 +9,13 @@ public class PlayerCharacterScript : MonoBehaviour
     Rigidbody2D rb;
     new Transform transform;
     [SerializeField] float speed;
+    Collider2D coll;
 
     [SerializeField] private Vector2 levelSize;
     public Vector2 currentDirection;
+
+    Animator anim;
+    public bool animationCallback;
      
     
     void Awake()
@@ -19,6 +23,8 @@ public class PlayerCharacterScript : MonoBehaviour
         input = ControllerInputScript.instance;    
         rb = GetComponent<Rigidbody2D>();
         transform = base.transform;
+        anim= GetComponentInChildren<Animator>(); 
+        coll= GetComponent<Collider2D>();   
     }
     
     
@@ -41,4 +47,20 @@ public class PlayerCharacterScript : MonoBehaviour
     {
         isPaused = pause;
     }
+
+
+    public void DoDeathAnimation()=> anim.Play("Death");
+    public void DoWinAnimation()=> anim.Play("Win");
+    public void EndMajorAnimation() => anim.Play("Neutral");
+
+    public void AnimationCallback()=> animationCallback = true;
+
+
+
+
+
+
+
+
+
 }

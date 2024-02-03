@@ -66,10 +66,6 @@ public class LevelManagerScript : Singleton<LevelManagerScript>
         }
     }
 
-    void Win(){  
-    Debug.Log("WIN");
-
-    }
 
     public void PauseLevel(bool pause = true)
     {
@@ -83,10 +79,21 @@ public class LevelManagerScript : Singleton<LevelManagerScript>
     }
 
 
-    public void Death()
+    public void Death() => new Coroutine(DeathCO(), this);
+    IEnumerator DeathCO()
     {
+        gameplayManager.PauseGame(true);
+        yield return WaitFor.Seconds(0.6f);
+
+        player.DoDeathAnimation();
+
+        while (!player.animationCallback) yield return null;
+        player.animationCallback = false;
+
+
         if (--gameplayManager.currentLifeCount == 0)
         {
+            player.gameObject.SetActive(false);
             gameplayManager.GameOver();
         }
         else
@@ -97,9 +104,29 @@ public class LevelManagerScript : Singleton<LevelManagerScript>
                 enemies[i].transform.position = enemyStartPos[i];
                 enemies[i].Begin();
                 roundTimer = 0;
+                gameplayManager.PauseGame(false);
+                player.EndMajorAnimation();
             }
         }
+        yield return null;
+
     }
 
+    void Win() => new Coroutine(WinCO(),  this);
+    IEnumerator WinCO()
+    {
+        gameplayManager.PauseGame(true);
+        yield return WaitFor.Seconds(0.6f);
+
+        player.DoWinAnimation();
+
+        while (!player.animationCallback) yield return null;
+        player.animationCallback = false;
+
+        player.EndMajorAnimation();
+        gameplayManager.NextLevel();
+
+        yield return null;
+    }
 
 }

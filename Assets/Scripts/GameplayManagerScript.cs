@@ -70,6 +70,7 @@ public class GameplayManagerScript : Singleton<GameplayManagerScript>
 
     void LoadUnloadLevel(int levelID)
     {
+        Debug.LogFormat("Loading Level ID: {0} from Level {1}.", levelID, currentLevelID);
         if(currentLevelID > -1)
         {
             SceneManager.UnloadSceneAsync(levelIDs[currentLevelID]);
@@ -80,11 +81,15 @@ public class GameplayManagerScript : Singleton<GameplayManagerScript>
         if (levelID == -1) return;
 
         SceneManager.LoadScene(levelIDs[levelID], LoadSceneMode.Additive);
-        //levelMan = LevelManagerScript.instance;
-        //levelMan = FindObjectOfType<LevelManagerScript>();
-        //if (levelMan == null) Debug.LogWarning("What");
         currentLevelID = levelID;
     }
+    public void NextLevel()
+    {
+        if (currentLevelID == levelIDs.Length - 1) ReturnToMenu();
+        else LoadUnloadLevel(currentLevelID + 1);
+    }
+    
+
 
     public void BeginGame()
     {
@@ -122,7 +127,7 @@ public class GameplayManagerScript : Singleton<GameplayManagerScript>
     }
 
 
-    void PauseGame(bool pausing = true)
+    public void PauseGame(bool pausing = true)
     {
         levelMan.PauseLevel(pausing);
         isPaused = pausing;
