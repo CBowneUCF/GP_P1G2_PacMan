@@ -82,10 +82,11 @@ public class GameplayManagerScript : Singleton<GameplayManagerScript>
 
         SceneManager.LoadScene(levelIDs[levelID], LoadSceneMode.Additive);
         currentLevelID = levelID;
+        inLevel = true;
     }
     public void NextLevel()
     {
-        if (currentLevelID == levelIDs.Length - 1) ReturnToMenu();
+        if (currentLevelID == levelIDs.Length - 1) ShowWinScreen();
         else LoadUnloadLevel(currentLevelID + 1);
     }
     
@@ -157,6 +158,12 @@ public class GameplayManagerScript : Singleton<GameplayManagerScript>
         PauseGame(true);
     }
 
+    void ShowWinScreen()
+    {
+        winScreenObject.SetActive(true);
+        PauseGame(true);
+    }
+
 
 
     public void ReturnToMenu()
@@ -165,6 +172,7 @@ public class GameplayManagerScript : Singleton<GameplayManagerScript>
         PauseGame(false);
         pauseMenuObject.SetActive(false);
         isGameOver = false;
+        
         gameOverObject.SetActive(false);
         inGameHUDObject.SetActive(false);
 
@@ -186,6 +194,7 @@ public class GameplayManagerScript : Singleton<GameplayManagerScript>
     [SerializeField] GameObject inGameHUDObject;
     [SerializeField] GameObject pauseMenuObject;
     [SerializeField] GameObject gameOverObject;
+    [SerializeField] GameObject winScreenObject;
     [SerializeField] TextMeshProUGUI livesTextObj;
     [SerializeField] TextMeshProUGUI scoreTextObj;
 

@@ -8,7 +8,7 @@ public class MenuInputListenerScript : MonoBehaviour
 
     public void BeginGame() => g.BeginGame();
     public void EndGame() => g.EndGame();
-    public void Return() => g.ReturnToMenu();
+    public void ReturnMenu() => g.ReturnToMenu();
 
-
+    public void UnPause() => g.PauseMenuToggle();
 }
