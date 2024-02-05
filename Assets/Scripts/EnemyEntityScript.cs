@@ -15,6 +15,7 @@ public class EnemyEntityScript : MonoBehaviour
     [HideInInspector] public NavMeshAgent navAgent;
     [HideInInspector] new public Collider2D collider;
     [HideInInspector] public SpriteRenderer sprite;
+    [HideInInspector] public Animator anim;
 
 
 
@@ -48,10 +49,12 @@ public class EnemyEntityScript : MonoBehaviour
     public float pokeyScareRadius;
     public Transform bashfulFollowee;
 
-
     //[SerializeField] string seeStateName;
     //[SerializeField] string seeSubStateName;
     public LayerMask playerAndCollMask;
+
+    public Sprite[] ghostSprites = new Sprite[4];
+
 
 
     void Awake()
@@ -63,7 +66,8 @@ public class EnemyEntityScript : MonoBehaviour
         navAgent.updateUpAxis = false;
         navAgent.speed = speed;
         collider = GetComponent<Collider2D>();
-        sprite = GetComponent<SpriteRenderer>();
+        sprite = GetComponentInChildren<SpriteRenderer>();
+        anim = GetComponent<Animator>();
         CreateStateObjects();
         Begin();
     }
@@ -107,8 +111,10 @@ public class EnemyEntityScript : MonoBehaviour
             stateGenerating.EnterState();
         }
         currentStateObject.StateUpate();
+
         //seeStateName = currentStateObject.ToString();
         //seeSubStateName = stateActive.subState.ToString();
+        UpdateSprite();
     }
 
 
@@ -154,6 +160,7 @@ public class EnemyEntityScript : MonoBehaviour
             randomOffset = Random.Range(10f, -10f);
             owner.collider.enabled = true;
             owner.navAgent.enabled = false;
+            owner.ChangeBlueState(0);
         }
 
         public override void StateUpate()
@@ -191,6 +198,7 @@ public class EnemyEntityScript : MonoBehaviour
             owner.navAgent.enabled = true;
             style = owner.style;
             subState = GhostSubState.Scatter;
+            owner.ChangeBlueState(0);
         }
 
         public override void StateUpate()
@@ -299,13 +307,16 @@ public class EnemyEntityScript : MonoBehaviour
             owner.navAgent.destination = owner.vulnerableTarget;
             vulnerableTimeLeft = owner.vulnerabilityTime;
             switchTimeLeft = owner.vulTimeSwitcher * 3;
-            owner.sprite.color = Color.blue;
+            //owner.sprite.color = Color.blue;
+            owner.ChangeBlueState(1);
         }
 
         public override void StateUpate()
         {
             if (vulnerableTimeLeft > 0) vulnerableTimeLeft -= Time.deltaTime;
             else owner.stateActive.EnterState();
+
+            if (vulnerableTimeLeft < owner.vulnerabilityTime * .3f) owner.ChangeBlueState(2);
 
             if (switchTimeLeft > 0) switchTimeLeft -= Time.deltaTime;
             else
@@ -326,7 +337,8 @@ public class EnemyEntityScript : MonoBehaviour
         {
             owner.navAgent.destination = owner.homeBaseTarget;
             owner.collider.enabled = false;
-            owner.sprite.color = Color.white * 0.5f;
+            //owner.sprite.color = Color.white * 0.5f;
+            owner.ChangeBlueState(3);
         }
 
         public override void StateUpate()
@@ -423,6 +435,36 @@ public class EnemyEntityScript : MonoBehaviour
 
 
 
+    void UpdateSprite()
+    {
+        Vector2 direction = (Vector2)navAgent.desiredVelocity.normalized;
 
+        float up = direction.y;
+        float down = -direction.y;
+        float left = -direction.x;
+        float right = direction.x;
 
+        float choose = down;
+        if (down > choose) choose = up;
+        if (left > choose) choose = left;
+        if (right > choose) choose = right;
+
+        if(choose == down) sprite.sprite = ghostSprites[0];
+        else if (choose == up) sprite.sprite = ghostSprites[1];
+        else if (choose == left) sprite.sprite = ghostSprites[2];
+        else if (choose == right) sprite.sprite = ghostSprites[3];
+        
+    }
+
+    void ChangeBlueState(int phase)
+    {
+        // 0 Is non Blue
+        // 1 is Blue
+        // 2 is Flashing Blue
+        // 3 is Dead
+
+        anim.Play("Blue." + animNames[phase]);
+    }
+
+    string[] animNames = new string[4] { "Default", "Blue", "Flashing", "Dead" } ;
 }
