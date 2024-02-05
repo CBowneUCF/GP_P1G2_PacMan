@@ -24,7 +24,8 @@ public class PlayerCharacterScript : MonoBehaviour
         rb = GetComponent<Rigidbody2D>();
         transform = base.transform;
         anim= GetComponentInChildren<Animator>(); 
-        coll= GetComponent<Collider2D>();   
+        coll= GetComponent<Collider2D>();
+        anim.Play("Base.Walking");
     }
     
     
@@ -34,6 +35,13 @@ public class PlayerCharacterScript : MonoBehaviour
     {
         if(!isPaused) rb.MovePosition((Vector2)transform.position + input.controlDirection*speed*Time.deltaTime);
         currentDirection = input.controlDirection;
+
+        anim.SetFloat("Speed", (currentDirection != new Vector2(0,0)? 1 : 0));
+        if(currentDirection != new Vector2(0, 0))
+        {
+            anim.SetFloat("X", currentDirection.x);
+            anim.SetFloat("Y", currentDirection.y);
+        }
 
         if(Mathf.Abs(transform.position.x) > levelSize.x) transform.position = new Vector3(Mathf.Clamp(-transform.position.x, -levelSize.x, levelSize.x), transform.position.y);
         if(Mathf.Abs(transform.position.y) > levelSize.y) transform.position = new Vector3(transform.position.x, Mathf.Clamp(-transform.position.y, -levelSize.y, levelSize.y));
@@ -49,9 +57,9 @@ public class PlayerCharacterScript : MonoBehaviour
     }
 
 
-    public void DoDeathAnimation()=> anim.Play("Death");
-    public void DoWinAnimation()=> anim.Play("Win");
-    public void EndMajorAnimation() => anim.Play("Neutral");
+    public void DoDeathAnimation()=> anim.Play("Major.Death");
+    public void DoWinAnimation()=> anim.Play("Major.Win");
+    public void EndMajorAnimation() => anim.Play("Major.Neutral");
 
     public void AnimationCallback()=> animationCallback = true;
 

@@ -177,7 +177,7 @@ public class GameplayManagerScript : Singleton<GameplayManagerScript>
     {
         //K I L L
         Application.Quit();
-        EditorApplication.isPlaying = false;
+        //EditorApplication.isPlaying = false;
     }
 
 
