@@ -100,6 +100,7 @@ public class GameplayManagerScript : Singleton<GameplayManagerScript>
         isGameOver = false;
         mainMenuObject.SetActive(false);
         gameOverObject.SetActive(false);
+        winScreenObject.SetActive(false);
         inGameHUDObject.SetActive(true);
     }
 
@@ -110,9 +111,8 @@ public class GameplayManagerScript : Singleton<GameplayManagerScript>
 
     public void PauseMenuToggle()
     {
-        if (inMainMenu || isGameOver) return;
+        if (!inLevel || inMainMenu || isGameOver) return;
 
-        if (!inLevel || isGameOver || inMainMenu)
         if (!isInPauseMenu)
         {
             isInPauseMenu = true;
@@ -175,6 +175,7 @@ public class GameplayManagerScript : Singleton<GameplayManagerScript>
         
         gameOverObject.SetActive(false);
         inGameHUDObject.SetActive(false);
+        winScreenObject.SetActive(false);
 
         MainMenuToggle(true);
 

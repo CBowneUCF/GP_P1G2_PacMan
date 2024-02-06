@@ -22,6 +22,10 @@ public class LevelManagerScript : Singleton<LevelManagerScript>
     public float scatterChaseSwitcher = 4;
     bool makeChase = true;
 
+    AudioSource audioSource;
+    public AudioClip pelletClip;
+    public AudioClip starClip;
+
 
     protected override void OnAwake() {
         gameplayManager = GameplayManagerScript.instance;
@@ -33,6 +37,8 @@ public class LevelManagerScript : Singleton<LevelManagerScript>
             enemyStartPos.Add(enemies[i].transform.position);
             
         }
+        audioSource = GetComponent<AudioSource>();
+        audioSource.Play();
     }
 
     private void Update()
@@ -55,11 +61,13 @@ public class LevelManagerScript : Singleton<LevelManagerScript>
     public void PelletCollect(){  
         pelletsLeft--;
         gameplayManager.points += pointsPerPellet;
+        audioSource.PlayOneShot(pelletClip);
         if (pelletsLeft == 0)Win();
 
     }
     public void PowerPelletCollect()
     {
+        audioSource.PlayOneShot(starClip);
         for (int i = 0; i < enemies.Length; i++)
         {
             enemies[i].MakeVulnerable();
@@ -71,11 +79,15 @@ public class LevelManagerScript : Singleton<LevelManagerScript>
     {
         player.SetPause(pause);
         for (int i = 0; i < enemies.Length; i++) enemies[i].SetPause(pause);
+        if (pause) audioSource.Pause();
+        else audioSource.UnPause();
     }
     public void PauseGame(bool pause = true)
     {
         gameplayManager.isPaused = pause;
         PauseLevel(pause);
+        if (pause) audioSource.Pause();
+        else audioSource.UnPause();
     }
 
 

@@ -48,12 +48,12 @@ public class EnemyEntityScript : MonoBehaviour
     public float pokeyScareRadius;
     public Transform bashfulFollowee;
 
-    //[SerializeField] string seeStateName;
-    //[SerializeField] string seeSubStateName;
+    [SerializeField] string seeStateName;
+    [SerializeField] string seeSubStateName;
     public LayerMask playerAndCollMask;
 
     public Sprite[] ghostSprites = new Sprite[4];
-
+    AudioSource fleeSound;
 
 
     void Awake()
@@ -67,6 +67,7 @@ public class EnemyEntityScript : MonoBehaviour
         collider = GetComponent<Collider2D>();
         sprite = GetComponentInChildren<SpriteRenderer>();
         anim = GetComponent<Animator>();
+        fleeSound = GetComponent<AudioSource>();
         CreateStateObjects();
         Begin();
     }
@@ -95,7 +96,11 @@ public class EnemyEntityScript : MonoBehaviour
         if(player != null)
         {
             if (currentStateObject == stateActive) LevelManagerScript.instance.Death();
-            else if (currentStateObject == stateVulnerable) stateFleeing.EnterState();
+            else if (currentStateObject == stateVulnerable)
+            {
+                fleeSound.Play();
+                stateFleeing.EnterState();
+            }
 
         }
     }
@@ -111,8 +116,8 @@ public class EnemyEntityScript : MonoBehaviour
         }
         currentStateObject.StateUpate();
 
-        //seeStateName = currentStateObject.ToString();
-        //seeSubStateName = stateActive.subState.ToString();
+        seeStateName = currentStateObject.ToString();
+        seeSubStateName = stateActive.subState.ToString();
         UpdateSprite();
     }
 
@@ -243,6 +248,7 @@ public class EnemyEntityScript : MonoBehaviour
                 owner.navAgent.destination = owner.scatterTarget;
                 isScattering = true;
             }
+            if ((Vector2)owner.transform.position == owner.scatterTarget) subState = GhostSubState.Chase;
         }
         void ChaseUpdate()
         {
@@ -277,7 +283,6 @@ public class EnemyEntityScript : MonoBehaviour
                         float angle = Vector2.Angle(-direction, owner.player.currentDirection);
                         if (angle < 60)
                         {
-                            Debug.Log("Clyde: AAAAAAAAAAAAAAAAAAA");
                             subState = GhostSubState.Scatter;
                         }
                     }
@@ -320,9 +325,12 @@ public class EnemyEntityScript : MonoBehaviour
             if (switchTimeLeft > 0) switchTimeLeft -= Time.deltaTime;
             else
             {
-                Vector2 switching = switchVerticle ? -Vector2.up : -Vector2.right;
-                owner.vulnerableTarget *= switching;
+                owner.vulnerableTarget = new Vector2(
+                    owner.vulnerableTarget.x * (switchVerticle ? -1 : 1), 
+                    owner.vulnerableTarget.y * (!switchVerticle ? -1 : 1));
                 owner.navAgent.destination = owner.vulnerableTarget;
+                switchTimeLeft = owner.vulTimeSwitcher;
+                switchVerticle = !switchVerticle;
             }
         }
     }

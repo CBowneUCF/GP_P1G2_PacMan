@@ -18,19 +18,19 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 842633430292222654, guid: fe12350f64f88f34c966bf97bda4642e, type: 3}
       propertyPath: scatterTarget.x
-      value: -9
+      value: -8
       objectReference: {fileID: 0}
     - target: {fileID: 842633430292222654, guid: fe12350f64f88f34c966bf97bda4642e, type: 3}
       propertyPath: scatterTarget.y
-      value: -10.5
+      value: -8.5
       objectReference: {fileID: 0}
     - target: {fileID: 842633430292222654, guid: fe12350f64f88f34c966bf97bda4642e, type: 3}
       propertyPath: vulnerableTarget.x
-      value: -9
+      value: -8
       objectReference: {fileID: 0}
     - target: {fileID: 842633430292222654, guid: fe12350f64f88f34c966bf97bda4642e, type: 3}
       propertyPath: vulnerableTarget.y
-      value: -10.5
+      value: -8.5
       objectReference: {fileID: 0}
     - target: {fileID: 842633430292222654, guid: fe12350f64f88f34c966bf97bda4642e, type: 3}
       propertyPath: generatingTimeStart

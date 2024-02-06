@@ -310,7 +310,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   audioSource: {fileID: 4827101393700726040}
   clips:
-  - {fileID: 8300000, guid: 71082cc0c706373488f6b71e55b9edfe, type: 3}
+  - {fileID: 8300000, guid: 8dab5bedecc8c1e4e9f29db89973dd44, type: 3}
   - {fileID: 8300000, guid: ddb5856cf09610d4f9cd6c1bd9840610, type: 3}
   soundID: 0
 --- !u!95 &5013049288541789137

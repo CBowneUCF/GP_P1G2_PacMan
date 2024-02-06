@@ -5,12 +5,12 @@ using UnityEngine;
 public class ControllerInputScript : Singleton<ControllerInputScript>
 {
     public Vector2 controlDirection;
-    GameplayManagerScript manager;
+    [SerializeField] GameplayManagerScript manager;
 
     protected override void OnAwake()
     {
 
-        manager = GameplayManagerScript.instance;
+        //manager = GameplayManagerScript.instance;
     }
 
     void Update()

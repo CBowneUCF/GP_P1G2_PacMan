@@ -14,8 +14,8 @@ public class PelletScript : MonoBehaviour
     void OnTriggerEnter2D(Collider2D other)
     {
         if(other.gameObject.GetComponent<PlayerCharacterScript>()) {
-        LevelManagerScript.instance.PelletCollect();
         if(isPower)LevelManagerScript.instance.PowerPelletCollect();
+        LevelManagerScript.instance.PelletCollect();
         gameObject.SetActive(false);
         }
     }
