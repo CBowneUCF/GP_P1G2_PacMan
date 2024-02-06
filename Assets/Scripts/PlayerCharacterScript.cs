@@ -57,9 +57,9 @@ public class PlayerCharacterScript : MonoBehaviour
     }
 
 
-    public void DoDeathAnimation()=> anim.Play("Major.Death");
-    public void DoWinAnimation()=> anim.Play("Major.Win");
-    public void EndMajorAnimation() => anim.Play("Major.Neutral");
+    public void DoDeathAnimation() { anim.Play("Major.Death"); }
+    public void DoWinAnimation() { anim.Play("Major.Win"); }
+    public void EndMajorAnimation() { anim.Play("Major.Neutral");}
 
     public void AnimationCallback()=> animationCallback = true;
 

@@ -95,6 +95,7 @@ public class LevelManagerScript : Singleton<LevelManagerScript>
     IEnumerator DeathCO()
     {
         gameplayManager.PauseGame(true);
+        inMajorAnim = true;
         yield return WaitFor.Seconds(0.6f);
 
         player.DoDeathAnimation();
@@ -120,6 +121,7 @@ public class LevelManagerScript : Singleton<LevelManagerScript>
                 player.EndMajorAnimation();
             }
         }
+        inMajorAnim = false;
         yield return null;
 
     }
@@ -128,6 +130,7 @@ public class LevelManagerScript : Singleton<LevelManagerScript>
     IEnumerator WinCO()
     {
         gameplayManager.PauseGame(true);
+        inMajorAnim = true;
         yield return WaitFor.Seconds(0.6f);
 
         player.DoWinAnimation();
@@ -138,7 +141,10 @@ public class LevelManagerScript : Singleton<LevelManagerScript>
         player.EndMajorAnimation();
         gameplayManager.NextLevel();
 
+        inMajorAnim=false;
         yield return null;
     }
+    [HideInInspector] public bool inMajorAnim;
+
 
 }

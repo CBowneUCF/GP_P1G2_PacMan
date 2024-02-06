@@ -113,6 +113,8 @@ public class GameplayManagerScript : Singleton<GameplayManagerScript>
     {
         if (!inLevel || inMainMenu || isGameOver) return;
 
+        if (LevelManagerScript.instance.inMajorAnim) return;
+
         if (!isInPauseMenu)
         {
             isInPauseMenu = true;
